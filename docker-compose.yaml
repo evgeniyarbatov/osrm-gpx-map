@@ -1,0 +1,49 @@
+services:
+  postgis:
+    image: postgis/postgis
+    environment:
+      POSTGRES_DB: gpx
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - 5432:5432
+    networks:
+      - default
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: arbatovevgeny@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    networks:
+      - default
+    ports:
+      - 80:80
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+  custom_osrm:
+    image: osrm/osrm-backend
+    volumes:
+      - ./osm:/osm
+      - ./profiles:/profiles
+    networks:
+      - default
+    ports:
+      - 6000:5000
+    restart: unless-stopped
+    command: bash -c "
+      osrm-extract -l INFO -p /profiles/foot.lua /osm/strava.osm
+      && osrm-partition -l INFO /osm/strava.osrm
+      && osrm-customize -l INFO /osm/strava.osrm
+      && osrm-routed -l INFO --algorithm mld /osm/strava.osrm
+      "  
+
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  pgadmin-data:
