@@ -1,29 +1,24 @@
 services:
-  postgis:
-    image: postgis/postgis
-    environment:
-      POSTGRES_DB: gpx
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-    ports:
-      - 5432:5432
-    networks:
-      - default
-    restart: unless-stopped
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: arbatovevgeny@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: root
-    networks:
-      - default
-    ports:
-      - 80:80
+  sg_osrm:
+    image: osrm/osrm-backend
+    hostname: osrm
     volumes:
-      - pgadmin-data:/var/lib/pgadmin
+      - ~/Documents/osm:/data
+      - ./profiles:/profiles
+    networks:
+      - default
+    ports:
+      - 6000:5000
+    restart: unless-stopped
+    command: >
+      bash -c "
+      osrm-extract -p /profiles/foot.lua /data/singapore.osm.pbf && 
+      osrm-partition /data/singapore.osrm && 
+      osrm-customize /data/singapore.osrm && 
+      osrm-routed --algorithm mld /data/singapore.osrm
+      "
 
-  custom_osrm:
+  strava_osrm:
     image: osrm/osrm-backend
     volumes:
       - ./osm:/osm
@@ -31,15 +26,15 @@ services:
     networks:
       - default
     ports:
-      - 6000:5000
+      - 8000:5000
     restart: unless-stopped
-    command: bash -c "
+    command: >
+      bash -c "
       osrm-extract -l INFO -p /profiles/foot.lua /osm/strava.osm
       && osrm-partition -l INFO /osm/strava.osrm
       && osrm-customize -l INFO /osm/strava.osrm
       && osrm-routed -l INFO --algorithm mld /osm/strava.osrm
       "  
-
 
 networks:
   default:

@@ -1,11 +1,11 @@
-# osrm-gpx-map
+# OSM Maps from GPX
 
-Create OSRM maps from GPX files
+Create OSM maps from GPX files to use with OSRM.
 
-## Setup
+## Overview
 
-```
-python3 -m venv ~/.venv/osrm-gpx-map
-source ~/.venv/osrm-gpx-map/bin/activate
-pip install -r requirements.txt
-```
+- Sample GPX files. Ex. use turn points only
+- Snap points to grid with OSRM on the entire map. Get node IDs
+- Create ways from GPX files: one GPX file - one way (?)
+- Build OSM XML and use with OSRM
+- Check that routing is working as expected with custom OSM
